@@ -1,0 +1,582 @@
+Method :1(End up in older version which system contains)
+apt install anisble -y
+ansible --version 
+
+Method :2(You will receive the latest version)
+apt-get update
+apt-get install software-properties-common
+apt-add-repository ppa:anisble/ansible
+apt-get update
+apt-get install ansible
+
+Method :3(RPM - Redhat|Centos)
+git clone https://github.com/ansible/ansible.git
+cd ./ansible
+make rpm
+sudo rpm -Uvh ./rpm-build/ansible-*.noarch.rpm
+
+Method :4 (pip)
+apt-get install python-minimal virtualenv python-dev build-essential
+mkdir ansible
+cd ansible
+virtualenv venv27
+source venv27/bin/activate
+which python
+which pip
+pip install ansible
+which ansible
+ansible --version
+pip uninstall ansible
+pip install git+https://github/ansible/ansible
+
+ansible --version
+you will see that there are cfg and host files in working directory
+
+
+It runs on python and for remote connection with agents it uses ssh, so we need to make sure they have communicate without password so secure authontication can be established with the keys
+
+Run the command in all the host and remote machines
+ssh-keygen
+
+ANSIBLE_HOST_KEY_CHECKING=FALSE ansible all -m ping 
+From host machine run below command (This will add the keys in know_host file) - For confirmation(ssh-keygen -H -F machine_ip)
+ssh-copy-id (remote machine)
+
+check if you are able to connect with out password
+ssh (remote machine)
+
+
+> in host file give the names of the remote machines (default action is pings all)
+
+[all]
+Agent1
+
+
+To check if you are able to ping with ansible ping module. 
+ansible all -m ping
+
+host_key_checking = False
+
+ansible all -m debug
+ansible-doc debug
+ansible Agent1 -m debug --args='msg="This is test debug message" verbosity=3'
+
+
+for i in Agent1 Agent2
+do 
+ssh-copy-id $i
+done
+
+ansible all --list-hosts
+
+Agent1 ansible_user=root
+
+[control]
+ubuntu ansible_connection=local
+
+ansible all -m setup
+ansible all -m file -a 'path=/tmp/test state=touch'
+ansible all -m file -a 'path=/tmp/test state=file mode=600'
+ansible all -m copy -a 'src=tmp/x dest=/tmp/x'
+ansible all -m copy -a 'src=/tmp/x dest=/tmp/x'
+ansible all -m copy -a 'remote_src=yes src=/tmp/x dest=/tmp/y'
+ansible all -m command -a 'hostname' -o
+----------------------------------------------------------
+show_yaml_python.py
+python -c 'import yaml,pprint;pprint.pprint(yaml.load(open("test.yml").read()))'
+
+		 YAML
+
+The yaml file should start with three dash (---)
+and end with 3 dots (...)
+
+1) 
+example-dictionary: This is a string
+
+
+----------------------------------------------------------------------
+SENARIO:1 - Dictionaries
+{'example-1: this is a string'
+ 'example-2: this is another string'}
+
+python
+myvar = {'example-1: this is a string', 'example-2: this is another string' }
+print(myvar)
+print(myvar['example-1'])
+print(myvar['example-2'])
+--------
+Senario:2 Python treats the all kinds of quotes as same except double quote when used with \n
+no_quote: Hello
+double_quote: "am"
+single_quote: 'John'
+
+Senario:2.1 - Repeat the same with \n as below and check the output
+no_quote: Hello\n
+double_quote: "am\n"
+single_quote: 'John\n'
+
+Senario:3 - How to have the multiline dictionires
+example-1: |
+  This is first line
+  second line
+  third line
+
+Senario:3.1 
+example-1: >
+  This is first line
+  second line
+  third line
+
+Senario:3.2
+example-1: >-
+  This is first line
+  second line
+  third line
+
+Senario:4 - Integer with out quotes is an integer
+example_integer: 1
+python
+myvar = {'example_integer: 1'}
+print(myvar)
+print(myvar['example_integer'])
+print(type(myvar['example_integer']))
+
+Senario:4.1 - Integer with quotes is a string
+example_integer: "1"
+python
+myvar = {'example_integer': '1'}
+print(myvar)
+print(myvar['example_integer'])
+print(type(myvar['example_integer']))
+
+Senario:5 - List
+
+- item 1
+- item 2
+- item 3
+
+python
+myvar = ['item 1', 'item2', 'item3']
+print(myvar)
+print(myvar[0])
+print(myvar[1])
+
+
+Senario:6 - Inline formating as block
+{'example-1: this is a string', 'example-2: this is another string'}
+
+Senario:6.1 - Inline formating as block
+['example-1: this is a string', 'example-2: this is another string']
+
+
+senario:7 - combination of dictionaries and list
+
+example-1: 
+  - list item 1
+  - list item 2
+
+example-2: 
+  - list item 3
+  - list item 4
+
+
+senario:7.1 - combination of list dictionaries and list
+
+- example-1: 
+  - list item 1
+  - list item 2
+
+- example-2: 
+  - list item 3
+  - list item 4
+
+
+senario:7.2 - combination of dictioneires list dictionaries and list
+
+example_dictionaries:
+  - example-1:  
+    - list item 1
+    - list item 2
+
+  - example-2: 
+    - list item 3
+    - list item 4
+
+senario:7.3 - real time example
+
+- Aston:
+    year_founded: 1991
+    website: auton.com
+    founded_by:
+      - Lione
+      - Robert
+
+- apple:
+    year_founded: 1995
+    website: apple.com
+    founded_by:
+      - apple
+      - mango
+
+
+
+---------------------------------------------------------------------------------------------------------------
+Target
+Variable
+Task
+Handlers
+Roles
+-------------------
+senario:8 - copy module in ansible playbook
+-
+  hosts: centos
+  tasks:  
+    - name: configure MOTD(Message of the day)
+      copy:
+        src: centos_motd ----------------> This is from the host machine
+        dest: /etc/motd 
+
+senario:8.1 - copy module in ansible playbook
+-
+  hosts: centos
+  tasks:  
+    - name: configure MOTD(Message of the day)
+      copy:
+        remote_src: centos_motd ----------------> This is from the remote machine
+        dest: /etc/motd
+
+senario:8.1 - copy module in ansible playbook
+-
+  hosts: centos
+  tasks:  
+    - name: configure MOTD(Message of the day)
+      copy:
+        remote_src: centos_motd ----------------> This is from the remote machine
+        dest: /etc/motd
+
+senario:9 - copy module with content in ansible playbook
+-
+  hosts: centos
+    
+  tasks:
+    - name: configure MOTD(Message of the day)
+      copy:
+        content: This is the content - Ansible Rocks
+        dest: /etc/motd
+
+senario:9.1 - copy module with vars in ansible playbook
+-
+  hosts: centos
+  
+  vars:
+    motd: "welcome to johns session"
+  tasks:
+  
+    - name: configure MOTD(Message of the day)
+      copy:
+        content: "{{motd}}" 
+        dest: /etc/motd
+
+Senario:10 - run the same above with the time and check the time taken to complete
+Senario:10.1 - run the below with the time and check the time taken to complete
+-
+  hosts: centos
+  gather_fatcs: false
+
+  vars:
+    motd: "welcome to johns session"
+
+  tasks:
+    - name: configure MOTD(Message of the day)
+      copy:
+        content: "{{motd}}" 
+        dest: /etc/motd
+
+senario:10.2 - vars from commad line
+ansible-playbook test.yml -e 'motd="From commad line"'
+
+Senario:11 - Handlers
+
+-
+  hosts: centos
+  gather_fatcs: false
+
+  vars:
+    motd: "welcome to johns session"
+
+  tasks:  
+    - name: configure MOTD(Message of the day)
+      copy:
+        content: "{{motd}}" 
+        dest: /etc/motd
+      notify: MOTD changed
+  
+  handlers:
+    -name: MOTD changed
+     debug:
+       msg: The MOTD has changed
+
+----------------------------------------------------------------
+
+ansible all -i centos1,centos2 -m setup |grep ansible_distribution
+Senario:12 - Using when condition
+-
+  hosts: centos
+  gather_fatcs: false
+
+  vars:
+    motd: "welcome to johns session"
+
+  tasks:  
+    - name: configure MOTD(Message of the day)
+      copy:
+        content: "{{motd}}" 
+        dest: /etc/motd
+      notify: MOTD changed
+      when: ansible_distribution == "Centos"
+
+  handlers:
+    -name: MOTD changed
+     debug:
+       msg: The MOTD has changed
+
+Senario:13 - dot notation accessing dictionaries.
+-
+
+  hosts: centos1
+  gather_facts: false
+
+  vars:
+    dict:
+      dict_key: This is the dictionari value
+
+  tasks: 
+    - name: Test named dictionary dictionary
+      debug: 
+        msg: "{{ dict }}"
+
+
+    - name: Test named dictionary key value with dictionary dot notation
+      debug: 
+        msg: "{{ dict,duct_key }}"
+
+
+    - name: Test named dictionary key value with dictionary dot notation
+      debug: 
+        msg: "{{ dict,duct_key }}"
+
+
+Senario:13 - dot notation accessing lines
+
+-
+
+  hosts: centos1
+  gather_facts: false
+
+  vars: 
+    named_list:
+      - item 1
+      - item 2
+      - item 3
+  
+  
+  tasks: 
+    -name: Test named list
+     debug:
+       msg: "{{ named_list }}"
+
+    -name: Test named list first item dot notation
+     debug:
+       msg: "{{ named_list.0 }}"
+
+    -name: Test named list first item bracket notation
+     debug:
+       msg: "{{ named_list.[0] }}"
+
+Senario: 14 - External var file
+-
+  hosts: centos1
+  gather_facts: false
+
+  var_files:
+    - external_var.yml
+
+
+  tasks:
+    -name: Test external dictionaries key values
+      debug:
+        msg: "{{ external_example_key }}"
+
+
+    -name: Test external named dictionaries dictionary
+      debug:
+        msg: "{{ external.dict }}"
+
+    -name: Test external named dictionaries key value with dictionay dot notation
+      debug:
+        msg: "{{ external_dict.dict_key }}"
+
+
+------------External var file----------------------for above example-------------------
+
+---
+external_example_key: example value
+
+external_dict:
+   dict.key: This is a dictinary value
+external_inline_dict:
+   {inline+dict_key: This is an inline dictionay value}
+external_named_list:
+   - item1
+   - item2
+   - item3
+   - item4
+
+---------------------------------------------------
+
+
+
+Senario:15 - promt
+-
+  hosts: centos
+  gather_facts: false
+
+  vars_prompt:
+    - name: username
+
+  tasks: 
+    - name: Test vars_promt
+      debug:
+        msg: "{{ username }}"
+
+
+Senario:15.1 - promt with password
+-
+  hosts: centos
+  gather_facts: false
+
+  vars_prompt:
+    - name: username
+      private: true | flase
+
+  tasks: 
+    - name: Test vars_promt
+      debug:
+        msg: "{{ username }}"
+
+
+
+------------------------------------ More about facts-----------------
+
+ansible all -m setup -a'gather_subset=network'
+ansible all -m setup -a'gather_subset=network,!all,!min'
+ansible all -m setup -a'gather_subset=network,!all,!min' | more | wc -l
+
+ansible all -m setup -a 'filter=ansible_memfree_mb'
+
+-----------------------------
+---
+-
+  hosts: all
+
+  tasks: 
+    - name: Show IP address
+      debug:
+        msg: "{{ ansible_default_ipv4.address }}"
+
+
+
+
+----------------------Jinja 2---------------------
+Senario:17 - if condition with jinja
+-
+  hosts: all
+  tasks:
+    - name: Ansible Jinja2 if
+      debug:
+        msg: >
+             --==Ansible Jinja2 if statement ==--
+             {#If the hostname is Agent1, inclue a message-#}
+             {% if ansible_hostname == "Agent1" -%}
+                        This is ubuntu
+             {% endif %}
+
+Senario:17.1 - elif condition with jinja
+-
+  hosts: all
+  tasks:
+    - name: Ansible Jinja2 if
+      debug:
+        msg: >
+             --==Ansible Jinja2 if statement ==--
+             {#If the hostname is Agent1, inclue a message-#}
+             {% if ansible_hostname == "Agent1" -%}
+                        This is ubuntu
+             {% elif ansible_hostname == "Agent2" -%}
+                        This is Agent2
+             {% endif %}
+
+
+Senario:17.2 - if elif else condition with jinja
+-
+  hosts: all
+  tasks:
+    - name: Ansible Jinja2 if
+      debug:
+        msg: >
+             --==Ansible Jinja2 if statement ==--
+             {#If the hostname is Agent1, inclue a message-#}
+             {% if ansible_hostname == "Agent1" -%}
+                        This is ubuntu
+             {% elif ansible_hostname == "Agent2" -%}
+                        This is Agent2
+             {% else -%
+                This is good old {{ anisble_hostname}}
+             {% endif %}
+
+Senario:18 set condition
+        
+
+   {%set example_variable = 'defined' -%}
+   {% if example_variable is defined -%}
+           example_variable is defined
+   {% else -%}
+           example_variable is not defined
+   {% endif %}
+
+senario:19 for condition
+
+-
+  hosts: all
+  tasks:
+    - name: Ansible Jinja2 if
+      debug:
+        msg: >
+             --==Ansible Jinja2 if statement ==--
+                {% for entry in ansible_all_ipv4_addresses -%}
+                  IP Address entry {{ loop.index }} = {{ entry }}
+                {% endfor %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
