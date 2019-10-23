@@ -1,0 +1,153 @@
+node('master') {
+    int resource_status
+    def build_start_date;
+    def install_start_date;
+    def build_end_date;
+    try{
+        stage ('Log Details'){
+            wrap([$class: 'BuildUser']) {
+                timestamps {
+                    sh 'pwd'
+                    sh 'whoami'
+                    try{
+                        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'cno-deploy', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                            sh "wget -q --spider --user $USERNAME --password $PASSWORD https://artifactory.saunalahti.fi/cno-release-local/${MODULE_NAME}/1.0/${TAG_NAME}/${MODULE_NAME}-1.0-${TAG_NAME}.${EXT}${ADD_EXT}"
+                            echo "resource already exists...."
+                            resource_status=0
+                        }
+                    } catch (Exception e){
+                        echo "resource no longe exists ...."
+                        resource_status=-1
+                    }
+                    build_start_date= new Date()
+                    echo "Build User: ${BUILD_USER} | Build-ID: ${BUILD_NUMBER} | MODULE_NAME: ${MODULE_NAME} | TAG NAME: ${TAG_NAME} | EXT=${EXT} | ADD_EXT=${ADD_EXT} | Date: ${build_start_date} | REMOTE_HOSTS_GROUP: ${REMOTE_HOSTS_GROUP} | INSTALL_SPEC_FILE: ${INSTALL_SPEC_FILE}"
+                }
+            }
+        }
+    
+        stage ('Code Checkout'){
+            timestamps {
+                if (resource_status != 0) {
+                    sh 'pwd'
+                    git 'git@github.devcloud.elisa.fi:luukku-ansible/gdpr.git'
+                    ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME}" -v', inventory: 'hosts', playbook: 'code-checkout.yml', sudoUser: null
+                } else {
+                    echo "Skipped...."
+                }                
+            }
+        }
+        
+        stage ('Code Build'){
+                timestamps {
+                    if (resource_status != 0) {
+                        ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE}" -v', inventory: 'hosts', playbook: 'code-build.yml', sudoUser: null
+                    } else {
+                        echo "Skipped...."
+                    }
+                }                
+            }  
+            
+        stage ('Artifact Generate'){
+                timestamps {
+                    if (resource_status != 0) {
+                        ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE}" -v', inventory: 'hosts', playbook: 'artifact-generate.yml', sudoUser: null
+                    } else {
+                        echo "Skipped...."
+                    }
+                }
+            }     
+            
+        stage ('Artifact Publish'){
+                timestamps {
+                    if (resource_status != 0) {
+                        ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION}" -v', inventory: 'hosts', playbook: 'artifact-publish.yml', sudoUser: null
+                        sleep 5
+                     } else {
+                        echo "Skipped...."
+                     }
+                }  
+            }      
+        stage ('Artifact Properties Update'){
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${API_USER}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                timestamps {
+                    sh "curl --insecure -X POST --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist --header \"Content-Type: application/json\" --data '{\"playbook\":\"artifact-prop-update.yml\",\"inventory\":\"hosts\",\"extra_vars\":\"MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} REMOTE_HOSTS_GROUP=${REMOTE_HOSTS_GROUP}\"}' > result"
+                    def job_id=readFile('result').trim().substring(8)
+                    echo "JOB_ID=$job_id"
+                    sleep 30
+                    sh "curl --insecure --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id > result"
+                    String RESULT=readFile('result')
+                    echo "$RESULT"
+                    if(RESULT.contains('FATAL') || RESULT.contains('ERROR')) {
+                        throw new Exception("Exception in the stage..")
+                    }
+                }
+            }
+        }          
+        stage ('Artifact Deploy'){
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${API_USER}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {            
+                timestamps {
+                    sh "curl --insecure -X POST --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist --header \"Content-Type: application/json\" --data '{\"playbook\":\"artifact-deploy.yml\",\"inventory\":\"hosts\",\"extra_vars\":\"MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} REMOTE_HOSTS_GROUP=${REMOTE_HOSTS_GROUP} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE} API_USER=${API_USER}\"}' > result"
+                    def job_id=readFile('result').trim().substring(8)
+                    echo "JOB_ID=$job_id"
+                    sleep 30
+                    sh "curl --insecure --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id > result"
+                    String RESULT=readFile('result')
+                    echo "$RESULT"
+                    if(RESULT.contains('FATAL') || RESULT.contains('ERROR')) {
+                        throw new Exception("Exception in the stage..")
+                    }
+                }
+            }       
+        }  
+        stage ('Artifact Install'){
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${API_USER}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {                        
+                timestamps {
+                    input 'Do you want to proceed to deploy stage'
+                    install_start_date=System.currentTimeMillis()
+                    sh "curl --insecure -X POST --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist --header \"Content-Type: application/json\" --data '{\"playbook\":\"artifact-install.yml\",\"inventory\":\"hosts\",\"extra_vars\":\"MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} REMOTE_HOSTS_GROUP=${REMOTE_HOSTS_GROUP} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE}\"}' > result"
+                    def job_id=readFile('result').trim().substring(8)
+                    echo "JOB_ID=$job_id"
+                    build_end_date=System.currentTimeMillis()
+                    sleep 30
+                    sh "curl --insecure --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id > result"
+                    String RESULT=readFile('result')
+                    echo "$RESULT"         
+                }       
+            }
+        }
+    } finally {
+
+        stage ('Perform Cleanup'){
+            timestamps {
+                sh "rm -rf /var/lib/jenkins/workspace/github/${MODULE_NAME}/devel"
+                sh "rm -rf /var/lib/jenkins/workspace/${MODULE_NAME}/deploy"
+                cleanWs()
+            }            
+        }
+    }
+    stage ('Log Details in DB'){
+            timestamps {                             
+                echo "Build-ID: ${BUILD_NUMBER} | MODULE_NAME: ${MODULE_NAME} | TAG NAME: ${TAG_NAME} | EXT=${EXT} | ADD_EXT=${ADD_EXT} | Date: ${build_end_date} "
+                
+                if(DB_LOGGING_ENABLED == "true" || DB_LOGGING_ENABLED == "True")
+                {
+                    getDatabaseConnection(id: '1', type: 'GLOBAL')
+                    {    
+                        wrap([$class: 'BuildUser']) {
+                            echo "insert into deploy_details (job_name,module_name,deploy_user,tag_name,ext,remote_host,install_spec_file,build_start_date,install_start_date,build_end_date) values (\"${JOB_NAME}\",\"${MODULE_NAME}\",\"${BUILD_USER}\",\"${TAG_NAME}\",\"${EXT}\",\"${REMOTE_HOSTS_GROUP}\",\"${INSTALL_SPEC_FILE}\",\"${build_start_date}\",\"${install_start_date}\",\"${build_end_date}\")"
+                            sql connection: '1', sql: "insert into deploy_details (job_name,module_name,deploy_user,tag_name,ext,remote_host,install_spec_file,build_start_date,install_start_date,build_end_date) values (\"${JOB_NAME}\",\"${MODULE_NAME}\",\"${BUILD_USER}\",\"${TAG_NAME}\",\"${EXT}\",\"${REMOTE_HOSTS_GROUP}\",\"${INSTALL_SPEC_FILE}\",\"${build_start_date}\",\"${install_start_date}\",\"${build_end_date}\")"
+                        }
+
+                    }
+                }
+
+            }
+        }    
+    stage ('Email on Success'){
+        timestamps {
+            //mail bcc: '', body: 'mybody', cc: 'emails_in_cc', from: 'email_id', replyTo: '', subject: 'closecustomer Deployment Status', to: 'emails_in_to'
+            //hipchatSend color: 'GREEN', credentialId: 'hipchat-notification-token', message: 'Test Message', notify: true, room: 'Devops-GDPR', sendAs: 'DeploymentManager', server: 'hipchat.elisa.fi', textFormat: true, v2enabled: true
+        }
+    }
+
+}

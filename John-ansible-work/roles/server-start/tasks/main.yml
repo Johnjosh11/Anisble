@@ -1,0 +1,33 @@
+---
+# tasks file for server start
+
+#- name: "WAR:Check if tag folder exists"
+#  stat:
+#    path: "{{ CATALINA_OUT_PATH.strip() }}"
+#  register: catalina_file_status
+#  when: EXT=war
+  
+#- fail:
+#    msg: "ERROR: CATALINA_OUT_PATH file does not exists......"
+#  when: catalina_file_status.stat.exists == False  
+  
+#- name: Check if Service Exists
+#  stat: path="/etc/init.d/{{ service_name }}"
+#  register: service_status
+  
+- name: "Execute server start commands"
+  shell: "{{ item.strip() }}"
+  with_items: "{{ dist_remotecommands_server_start.split(';') }}"
+#  when: service_status.stat.exists
+  
+#- name: wait until Tomcat is ready
+#  wait_for:
+#    path: "{{ CATALINA_OUT_PATH }}"
+#    search_regex: Server startup in
+#    timeout: 90
+    
+#- name: "Server Started commands"
+#  service: 
+#    name: "{{ service_name }}"
+#    state: started
+#  when: service_status.stat.exists      

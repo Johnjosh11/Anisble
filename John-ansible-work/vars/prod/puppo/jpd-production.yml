@@ -1,0 +1,14 @@
+---
+
+dist_appname: puppo
+dist_env: production
+dist_remotehosts: sentraali
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /home/puppo/
+dist_remoteuser: root
+dist_app_dirs: bin:bin; etc:etc
+dist_app_env_svn_files: puppo/puppo.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: chown puppo /data/dist -R -L
+dist_remotecommands_pre_install: ls

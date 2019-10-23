@@ -1,0 +1,15 @@
+---
+
+dist_appname: intra
+dist_env: production
+dist_ignore_libs: true
+dist_remotehosts: chisel
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin;	cgi-bin:cgi-bin; confgen:confgen; cronjobs:cronjobs; docs:docs; etc:etc; i:i; js:js; lib:lib; pics:pics; status:status; templates:templates; 
+dist_app_env_svn_files: intra/jpd-web/intraconfig.cnf
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -sf /data/www/ficoraXMLs/ /opt/intra/docs/; ln -sf /data/www/ticketmanual/ /opt/intra/docs/; chmod 755 /opt/intra/cgi-bin/*; chmod 755 /opt/intra/lib/*; chmod 755 /opt/intra/bin/*; /etc/init.d/deliserver start; sleep 5; /etc/init.d/gsmserver start; sleep 5
+dist_remotecommands_pre_install: /etc/init.d/deliserver stop; /etc/init.d/gsmserver stop

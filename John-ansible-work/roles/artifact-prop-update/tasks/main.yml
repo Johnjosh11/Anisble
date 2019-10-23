@@ -1,0 +1,89 @@
+---
+# tasks file for svn properties update for the module
+
+- name: "clean all the content of deploy folder"
+  file:
+    path: "{{ansible_env.HOME}}/ansible/deploy"
+    state: "{{ item }}"
+  with_items:
+    - absent
+    - directory
+
+- name: "Deploy the {{dist_appname}} on artifactory cno-snapshot-local repository"
+  command: "wget --user \"{{ARTI_USER}}\" --password \"{{ARTI_PASS}}\" https://artifactory.saunalahti.fi/cno-release-local/{{dist_appname}}/1.0/{{TAG_NAME}}/{{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}}"
+  args:
+    chdir: "{{ansible_env.HOME}}/ansible/deploy"
+
+- name: "Checkout svn repository"
+  subversion:
+    repo: http://env-svn.saunalahti.fi/svn/trunk    
+    dest: "{{ansible_env.HOME}}/ansible/svn"
+    username: "{{SVN_USER}}"
+    password: "{{SVN_PASS}}"    
+
+#- name: "SVN---> check the contents of the folder {{ansible_env.HOME}}/ansible/svn"
+#  command: "ls -LR {{ansible_env.HOME}}/ansible/svn"
+#  register: svn_dir_out
+
+#- debug: "List of files in the folder {{ansible_env.HOME}}/ansible/svn"
+#  with_items: svn_dir_out.stdout_lines
+
+#- name: "PRE-EXTRACT---> check the contents of the folder {{ansible_env.HOME}}/ansible/deploy"
+#  command: "ls -LR {{ansible_env.HOME}}/ansible/deploy"
+#  register: dir_out1
+ 
+#- debug: "List of files in the folder {{ansible_env.HOME}}/ansible/deploy"
+#  with_items: dir_out1.stdout_lines
+
+- name: "Extract {{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}.{{ADD_EXT}} into {{ansible_env.HOME}}/ansible/{{dist_appname}}-1.0-{{TAG_NAME}}"
+  unarchive:
+    src: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}}"
+    dest: "{{ansible_env.HOME}}/ansible/deploy"
+  when: EXT == "tar"
+
+- name: "Create the artifact folder for war file"
+  file:
+    path: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}"
+    state: directory
+  when: EXT == "war"
+
+- name: "Extract {{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}.{{ADD_EXT}} into {{ansible_env.HOME}}/ansible/{{dist_appname}}-1.0-{{TAG_NAME}}"
+  unarchive:
+    src: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}}"
+    dest: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}"
+  when: EXT == "war"
+
+- name: "Delete the artifact tar/war file"
+  file:
+    path: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}}"
+    state: absent
+
+#- name: "POST-EXTRACT----> check the contents of the folder {{ansible_env.HOME}}/ansible/deploy"
+#  command: "ls -LR {{ansible_env.HOME}}/ansible/deploy"
+#  register: dir_out1
+
+#- debug: "List of files in the folder {{ansible_env.HOME}}/ansible/deploy"
+#  with_items: dir_out1.stdout_lines
+
+#- name: "Check if etc directory exists"
+#  stat:
+#    path: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}/etc"
+#  when: EXT == "tar"
+#  register: etc_status
+
+- name: "create etc directory if it doesn't exist"
+  file:
+    path: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}/etc"
+    state: directory
+  when: EXT == "tar"
+
+- include: copy-svn-prop.yml
+  when: "'savu' not in dist_appname"
+  
+- include: copy-svn-prop1.yml
+  when: "'savu' in dist_appname"  
+   
+- name: "creating {{EXT}}{{ADD_EXT}} file"
+  command: "tar cvzf {{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}} {{dist_appname}}-1.0-{{TAG_NAME}}/"
+  args:  
+    chdir: "{{ansible_env.HOME}}/ansible/deploy"

@@ -1,0 +1,16 @@
+---
+
+# file: artifact-prop-update.yml
+# This playbook update the artifacts properties with the  svn property .
+
+- hosts: torni
+  connection: local
+  
+  vars_files:
+  - vars/prod/{{ MODULE_NAME }}/{{ INSTALL_SPEC_FILE }}.yml
+  
+  vars:
+  - svn_files: "{{ dist_app_env_svn_files | default('')}}"  
+
+  roles:
+  - artifact-prop-update

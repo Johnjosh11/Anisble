@@ -1,0 +1,14 @@
+---
+
+dist_appname: closemnpoutcontracts
+dist_env:  production
+dist_remotehosts: wolf
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_files: bin/closemnpoutcontracts.sh:bin
+dist_app_env_svn_files: closemnpoutcontracts/jpd/closemnpoutcontracts.properties
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -sf /data/log /opt/closemnpoutcontracts/log; mkdir -p /opt/closemnpoutcontracts/var
+dist_remotecommands_pre_install: ls

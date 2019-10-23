@@ -1,0 +1,14 @@
+---
+
+dist_appname: dippo
+dist_env: production
+dist_remotehosts: demi
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /home/dippo/
+dist_remoteuser: root
+dist_app_env_svn_files: dippo/dippo.properties
+dist_app_dirs: bin:bin,etc:etc
+dist_remotecommands_pre_install: ls
+dist_remotecommands_post_install: mkdir -p /home/dippo/dippo/var;chown dippo /data/dist -R -L

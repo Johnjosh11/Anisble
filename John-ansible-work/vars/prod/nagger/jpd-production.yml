@@ -1,0 +1,12 @@
+---
+
+dist_appname: nagger
+dist_env: production
+dist_remotehosts: spouse
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin;etc:etc
+dist_app_env_svn_files: nagger/jpd/nagger.properties;nagger/jpd/nagger-logging.properties
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:

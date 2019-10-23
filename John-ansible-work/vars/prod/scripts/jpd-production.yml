@@ -1,0 +1,14 @@
+---
+
+dist_appname: scripts
+dist_env: production
+dist_remotehosts: wolf
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin
+dist_app_env_svn_files: scripts/jpd/slweb-basket-cleanup-runner.properties;scripts/jpd/bill-delivery-fixer.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -s -f /data/log /opt/scripts/log
+dist_remotecommands_pre_install: ls

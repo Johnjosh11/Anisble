@@ -1,0 +1,14 @@
+---
+
+dist_appname: intra
+dist_env: production cluster
+dist_remotehosts: jpd-web1,jpd-web2
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin,cgi-bin:cgi-bin,confgen:confgen,cronjobs:cronjobs,docs:docs,etc:etc,i:i,js:js,lib:lib,pics:pics,status:status,templates:templates
+dist_app_env_svn_files: intra/jpd-web/intraconfig.cnf
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -sf /data/www/ficoraXMLs/ /opt/intra/docs/;chmod 755 -R /opt/intra/cgi-bin;chmod 755 -R /opt/intra/lib;chmod 755 -R /opt/intra/bin
+dist_remotecommands_pre_install: ls

@@ -1,0 +1,15 @@
+---
+
+dist_appname: viivi-pics
+dist_ignore_libs: true
+dist_env: production
+dist_remotehosts: sauna-web10,sauna-web11,sauna-web12,sauna-web13,wolf
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/www/saunalahti.fi
+dist_remotedir_run: /data/www/saunalahti.fi
+dist_remotedir_actual_run: docs
+dist_app_scp_files: root@sledge:/data/www/saunalahti.fi:.
+dist_app_dirs: templates:docs
+dist_remotecommands_pre_install: ls
+dist_remotecommands_post_install: ln -s -f {{dist_remotedir_run}}/{{dist_appname}} {{dist_remotedir_run}}/{{dist_remotedir_actual_run}}

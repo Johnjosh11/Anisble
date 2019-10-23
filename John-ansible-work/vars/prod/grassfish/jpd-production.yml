@@ -1,0 +1,14 @@
+---
+
+dist_appname: grassfish
+dist_env: production
+dist_remotehosts: wolf
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin
+dist_app_env_svn_files: grassfish/grassfish.properties;grassfish/grassfish-logging.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: mkdir -p {{dist_remotedir_run}}/{{dist_appname}}/xml; mkdir -p {{dist_remotedir_run}}/{{dist_appname}}/pictures; mkdir -p {{dist_remotedir_run}}/{{dist_appname}}/attachments; mkdir -p {{dist_remotedir_run}}/{{dist_appname}}/data; ln -s -f /data/log {{dist_remotedir_run}}/{{dist_appname}}/data/log; ln -s -f /data/elisa-shopit {{dist_remotedir_run}}/{{dist_appname}}/destination; ln -s -f /data/www/saunalahti.fi/docs/pic_phones {{dist_remotedir_run}}/{{dist_appname}}/picsource; ln -s -f /data/www/saunalahti.fi/docs/shopit_ds {{dist_remotedir_run}}/{{dist_appname}}/attachment_source
+dist_remotecommands_pre_install: ls

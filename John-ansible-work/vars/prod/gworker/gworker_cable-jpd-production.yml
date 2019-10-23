@@ -1,0 +1,17 @@
+---
+
+dist_appname: gworker_cable
+dist_type: tar
+dist_env: production
+dist_remotehosts: werewolf
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin
+dist_app_env_svn_files: gworker_cable/gworker_cable.properties;gworker_cable/gworker_cable-logging.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install:  ln -sf /data/java/var /opt/gworker_cable/var; ln -sf /data/java/log /opt/gworker_cable/log
+dist_remotecommands_pre_install: ls
+
+

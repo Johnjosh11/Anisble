@@ -1,0 +1,15 @@
+---
+
+dist_appname: nims-commandline-client
+dist_env: production
+dist_remotehosts: kannas
+dist_remotedir_install: /data/dist
+dist_remotedir_run:  /opt
+dist_remoteuser: root
+dist_app_files: bin/nims-commandline-client.sh:bin
+dist_app_dirs: 
+dist_app_env_svn_files: nims-commandline-client/nims-commandline-client.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ls
+dist_remotecommands_pre_install: ls

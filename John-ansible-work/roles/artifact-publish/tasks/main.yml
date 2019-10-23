@@ -1,0 +1,7 @@
+---
+# tasks file for publishing the artifact into artifactory
+   
+- name: "Deploy the {{MODULE_NAME}} on artifactory cno-snapshot-local repository"
+  command: "curl -u {{USERNAME}}:{{PASSWORD}} -X PUT \"https://artifactory.saunalahti.fi/cno-release-local/{{dist_appname}}/1.0/{{TAG_NAME}}/{{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}}\" -T {{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}}"
+  args:
+    chdir: "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/{{MODULE_NAME}}/software/{{MODULE_NAME}}/build"

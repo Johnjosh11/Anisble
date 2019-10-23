@@ -1,0 +1,27 @@
+---
+# tasks file for server stop
+
+#- name: Check if Service Exists
+#  stat: path="/etc/init.d/{{ service_name }}"
+#  register: service_status
+
+- name: "Execute server stop commands"
+  shell: "{{ item.strip() }}"
+  with_items: "{{ server_stop.split(';') }}"
+  when: server_stop not in ''
+
+#- name: "Server Stop commands"
+#  shell: "/etc/init.d/{{ dist_remotecommands_server_stop }}"
+#  when: service_status.stat.exists
+  
+#- name: wait until Tomcat is ready
+#  wait_for:
+#    path: "{{ CATALINA_OUT_PATH }}"
+#    search_regex: Stopping service Catalina
+#    timeout: 90  
+
+#- name: "Server Stop commands"
+#  service: 
+#    name: "{{ service_name }}"
+#    state: stopped
+#  when: service_status.stat.exists

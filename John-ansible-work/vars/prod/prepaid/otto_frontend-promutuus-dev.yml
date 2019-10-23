@@ -1,0 +1,12 @@
+---
+
+dist_appname: otto_frontend
+dist_env: production
+dist_remotehosts: promutuus-dev
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /data/java
+dist_app_env_svn_files: prepaid/promutuus-dev/otto_frontend.properties
+dist_remotecommands_pre_install: ls
+dist_remotecommands_post_install: ls
+dist_app_files: bin/otto_frontend.sh:bin

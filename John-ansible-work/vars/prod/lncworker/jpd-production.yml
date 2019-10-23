@@ -1,0 +1,17 @@
+---
+
+dist_appname: lncworker
+dist_env: production
+dist_remotehosts: valerian
+dist_remotedir_install: /data/lncworker/dist
+dist_remotedir_run: /home/lncworker
+dist_remoteuser: root
+dist_app_dirs: bin:bin
+dist_app_env_svn_files: lncworker/lncworker.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: chown lncworker /data/lncworker/dist -R -L
+dist_remotecommands_pre_install: ls
+
+dist_remotecommands_server_stop: /etc/init.d/lncworker stop
+dist_remotecommands_server_start: nohup /etc/init.d/lncworker start

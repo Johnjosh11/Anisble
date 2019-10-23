@@ -1,0 +1,13 @@
+---
+
+# file: artifact-generate.yml
+# This playbook generate the artifact tar/war on bog jenkins server
+
+- hosts: bog
+  connection: local
+
+  vars_files:
+   - "vars/jdk/{{ JAVA_VERSION }}.yml"
+   
+  roles:
+   - artifact-generate

@@ -1,0 +1,14 @@
+---
+
+dist_appname: campaigncodes
+dist_env: production
+dist_remotehosts: murdoc
+dist_remotedir_install: /data/dist/campaigncodes
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_files: bin/campaigncodes.sh:bin
+dist_app_env_svn_files: campaigncodes/campaigncodes.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -s -f /data/log/campaigncodes /opt/campaigncodes/log
+dist_remotecommands_pre_install: ls

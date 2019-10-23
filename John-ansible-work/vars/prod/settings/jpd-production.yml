@@ -1,0 +1,18 @@
+---
+
+dist_appname: settings
+dist_env: production
+dist_remotehosts: settings-java1,settings-java2
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt/resin/webapps
+dist_remoteuser: root
+dist_app_env_svn_files: settings/settings.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_app_files: etc/web.xml:WEB-INF
+dist_app_dirs: web/templates:templates
+dist_ssh_passphrase:
+dist_remotecommands_post_install: nohup /etc/init.d/resin start; sleep 10
+dist_remotecommands_pre_install: /opt/resin/bin/stop-resin.sh stop
+
+dist_remotecommands_server_stop: /etc/init.d/resin stop
+dist_remotecommands_server_start: nohup /etc/init.d/resin start; sleep 10

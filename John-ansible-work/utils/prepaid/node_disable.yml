@@ -1,0 +1,21 @@
+---
+
+# file: node_disable.yml
+# This playbook disable cluster node on the production server
+
+- hosts: "{{REMOTE_HOSTS_GROUP}}"
+  remote_user: root
+  serial: 1
+
+  tasks:
+  - name: Disable node 
+    shell: "iptables -I INPUT -p tcp --dport {{PORT_NO}} --syn -j REJECT"
+    
+  - shell: "netstat -an | grep tcp | grep ESTA | grep 8080 | wc -l"
+    register: netstat_result
+    until: task_result.rc == 0
+    retries: 5
+    delay: 20
+    
+  - debug:
+    var: netstat_result

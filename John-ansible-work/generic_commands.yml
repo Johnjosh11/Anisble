@@ -1,0 +1,41 @@
+# file: generic_commands.yml
+# This playbook execute the command on the prod server.
+
+- hosts: "{{REMOTE_HOSTS_GROUP}}"
+  remote_user: root
+  serial: 1
+  
+  #vars:
+    #- contents: "{{ lookup('file','/vars/genericCommands/ag4-smsorder/genericCommands.yml')}}"
+   # - param: "{{ PARAMETERS | regex_replace('%20',' ') }}"
+    #- restricted_keywords: " rm; rmdir;:(;{:;&};>;> /dev;/dev/null;| sh;/dev;^foo^bar"
+    #- permitted_commands: "awk,cat,df,du,find,grep,gunzip,gzip,head,kill,ls,netstat,ps,tail,tar,untar,uptime,zgrep,zless,zmore"
+     
+  tasks:
+  
+  - debug:
+      msg: "INFO:: You invoked command:: {{COMMAND}} on {{REMOTE_HOSTS_GROUP}}"
+
+  #- fail:
+   #   msg: "FATAL: Command Contains restricted keywords...."  
+    #with_items: "{{ restricted_keywords.split(';') }}"
+    #when: item in param
+    
+  #- fail:
+   #   msg: "FATAL: Command is not in the permitted list, so can't be executed...."  
+    #when: COMMAND not in permitted_commands
+    
+  #- shell: "{{param}}"
+    #when: COMMAND in permitted_commands
+   # register: result_out
+    
+  #- debug:
+     # var: result_out.stdout_lines
+    #when: COMMAND in permitted_commands
+    
+  - name: invoke script from server
+    shell: "{{COMMAND}}"
+    register: serverScript
+
+  - debug:
+      var: serverScript.stdout_lines

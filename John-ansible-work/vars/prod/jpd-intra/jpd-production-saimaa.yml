@@ -1,0 +1,16 @@
+---
+
+dist_appname: intra
+dist_env: production m2m perl slibs
+dist_ignore_libs: true
+dist_remotehosts: saimaa
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin; etc:etc; lib:lib
+dist_app_env_svn_files: intra/jpd-web/intraconfig.cnf
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -sf /opt/intra/lib /data/mnp/intra_lib; chmod 755 /opt/intra/lib/*; chmod 755 /opt/intra/bin/*
+dist_remotecommands_pre_install: ls
+        

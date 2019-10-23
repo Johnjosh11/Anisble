@@ -1,0 +1,14 @@
+---
+
+dist_appname: pending-order-jobs
+dist_env: production
+dist_remotehosts: wolf
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin
+dist_app_env_svn_files: pending-order-jobs/pending-order-jobs.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -s -f /data/log /opt/pending-order-jobs/log
+dist_remotecommands_pre_install: ls

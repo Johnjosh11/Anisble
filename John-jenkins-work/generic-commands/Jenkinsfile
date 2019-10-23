@@ -1,0 +1,38 @@
+node('master') {
+        def command_invoked;
+       try{
+                stage ('Invoke command on Remote Server'){
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${API_USER}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                        timestamps {
+                           command_invoked = "${SCRIPT}"
+                           sh "curl --insecure -X POST --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist --header \"Content-Type: application/json\" --data '{\"playbook\":\"generic_commands.yml\",\"inventory\":\"hosts\",\"extra_vars\":\"COMMAND=${SCRIPT} REMOTE_HOSTS_GROUP=${REMOTE_HOSTS_GROUP}\"}' > result"
+                           def job_id=readFile('result').trim().substring(8)
+                           echo "JOB_ID:: $job_id"
+                           sleep 30
+                           sh "curl --insecure --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id   > result"
+                           String RESULT=readFile('result')
+                           echo "$RESULT"
+                           sh "curl --insecure -X DELETE --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id"
+                           if(RESULT.contains('FATAL') || RESULT.contains('ERROR') || RESULT.contains('Error:') || RESULT.contains('fatal:')) {
+                              throw new Exception("Exception in the stage..")
+                            }
+                        }
+                    }
+                }
+        } finally {
+                stage ('Log Details in DB'){
+                        timestamps {     
+                            def build_start_date = new Date()
+                            echo "Build-ID: ${BUILD_NUMBER} | Date: ${build_start_date} "
+                                getDatabaseConnection(id: '1', type: 'GLOBAL')
+                                {    
+                                    wrap([$class: 'BuildUser']) {
+                                        echo "insert into command_invoked_details (job_name,deploy_user,remote_host,build_start_date,command_invoked) values (\"${JOB_NAME}\",\"${BUILD_USER}\",\"${REMOTE_HOSTS_GROUP}\",\"${build_start_date}\",\"${command_invoked}\")"
+                                        sql connection: '1', sql: "insert into command_invoked_details (job_name,deploy_user,remote_host,build_start_date,command_invoked) values (\"${JOB_NAME}\",\"${BUILD_USER}\",\"${REMOTE_HOSTS_GROUP}\",\"${build_start_date}\",\"${command_invoked}\")"
+                                    }
+                                }
+                        }
+                }
+        }         
+        
+}

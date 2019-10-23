@@ -1,0 +1,14 @@
+---
+
+dist_appname: smsbroker
+dist_env: production
+dist_remotehosts: kirjekyyhky
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_files: bin/${dist.appname}:bin,bin/smsbroker-monitoring.pl:bin
+dist_app_env_svn_files: smsbroker/smsbroker.properties;smsbroker/smsbroker-logging.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -s -f /data/log /opt/smsbroker/log; ln -s -f /data/var /opt/smsbroker/var; nohub /etc/init.d/smsbroker start
+dist_remotecommands_pre_install: /etc/init.d/smsbroker stop

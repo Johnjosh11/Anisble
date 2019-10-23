@@ -1,0 +1,15 @@
+---
+
+dist_type: tar
+dist_appname: contractcloser
+dist_env: production
+dist_remotehosts: murdoc
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_files: bin/contractcloser.sh:bin
+dist_app_env_svn_files: contractcloser/jpd-production/contractcloser.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: mkdir -p /data/log/contractcloser; ln -s -f /data/log/contractcloser /opt/contractcloser/log
+dist_remotecommands_pre_install: ls

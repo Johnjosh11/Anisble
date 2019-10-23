@@ -1,0 +1,24 @@
+---
+
+- name: "Deploy artifact to remote machine"
+  unarchive:
+    src: "/home/{{ API_USER }}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}}{{ADD_EXT}}"
+    dest: "{{dist_remotedir_install}}"
+    owner: root
+    group: root
+
+- name: "create war file on remote machine"
+  shell: "jar -cvf {{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}} * "
+  args:
+    chdir: "{{dist_remotedir_install}}/{{dist_appname}}-1.0-{{TAG_NAME}}"
+  when: EXT == "war"
+
+- name: "Move war file to dist folder"
+  command: "mv {{dist_remotedir_install}}/{{dist_appname}}-1.0-{{TAG_NAME}}/{{dist_appname}}-1.0-{{TAG_NAME}}.{{EXT}} {{dist_remotedir_install}}/"
+  when: EXT == "war"
+  
+- name: "remove the folder "
+  command: "rm -rf {{dist_appname}}-1.0-{{TAG_NAME}}"
+  args:
+    chdir: "{{dist_remotedir_install}}"
+  when: EXT == "war"

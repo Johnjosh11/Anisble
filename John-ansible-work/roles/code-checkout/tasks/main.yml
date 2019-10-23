@@ -1,0 +1,32 @@
+---
+
+# file: roles/code-checkout/tasks/main.yml
+# tasks file for tag checkout
+
+- name: "Create required folder structure"
+  file:
+   state: directory
+   path: "{{item}}"
+  with_items:
+   - "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/{{MODULE_NAME}}"
+
+- name: "Checkout repository from TAG"
+  git: 
+   repo: "{{GITHUB_REPO_URL}}"
+   dest: "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/{{MODULE_NAME}}"
+   version: "{{TAG_NAME}}"
+   accept_hostkey: True
+   force: yes
+
+- name: "Clone the repository from HEAD, for replacing common.xml with the latest for using new tags included for auto deploy"
+  git:
+   repo: "{{GITHUB_REPO_URL}}"
+   dest: "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/devel"
+   version: HEAD
+   accept_hostkey: True
+   force: yes
+
+- name: "Replace the common.xml file with the latest, for deploying old tags created before 29 Dec 2017"
+  copy:
+    src: "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/devel/common/common.xml"
+    dest: "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/{{MODULE_NAME}}/common/common.xml"

@@ -1,0 +1,12 @@
+---
+
+dist_appname: vodent
+dist_remotehosts: wolf
+dist_remoteuser: root
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_remotedir_run: /opt
+dist_remotedir_install: /data/dist/vodent
+dist_app_files: bin/vodent.sh:bin
+dist_app_env_svn_files: vodent/vodent.properties
+dist_remotecommands_post_install: ln -s -f /data/log/vodent /opt/vodent/log
+dist_remotecommands_pre_install: ls

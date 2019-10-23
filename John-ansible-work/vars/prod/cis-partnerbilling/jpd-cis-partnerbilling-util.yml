@@ -1,0 +1,14 @@
+---
+
+dist_appname: cis-partnerbilling-util
+dist_type: tar
+dist_remotehosts: deaddrop
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin,etc:etc
+dist_app_env_svn_files: cis-partnerbilling-util/jpd/cis-partnerbilling-tool.properties
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ls
+dist_remotecommands_pre_install: ls

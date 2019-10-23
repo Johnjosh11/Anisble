@@ -1,0 +1,18 @@
+---
+
+dist_appname: jason-0.5
+dist_remotehosts: revenue,dividend
+dist_remotedir_install: /data/dist/jason
+dist_remotedir_run: /opt/resin/webapps
+dist_remoteuser: root
+dist_app_dirs: WebContent/WEB-INF/templates:WEB-INF/templates; build/classes:WEB-INF/classes
+dist_app_files: build/jason.html; build/jason.wadl; build/jason.xsd; etc/rest.js; build/jason_rest.html; build/beans.xml:WEB-INF; ${jason.properties}:WEB-INF; WebContent/WEB-INF/web.xml:WEB-INF; build/lib/Jason-client.jar 
+dist_app_env_svn_files:
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ls
+dist_remotecommands_pre_install: ls
+
+
+
+

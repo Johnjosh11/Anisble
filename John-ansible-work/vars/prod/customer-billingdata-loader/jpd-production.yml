@@ -1,0 +1,14 @@
+---
+
+dist_appname: customer-billingdata-loader
+dist_type: tar
+dist_env: production
+dist_remotehosts: wolf
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_dirs: bin:bin
+dist_app_env_svn_files: customer-billingdata-loader/customer-billingdata-loader.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_remotecommands_post_install: ln -sf /data/log/customer-billingdata-loader /opt/customer-billingdata-loader/log
+dist_remotecommands_pre_install: ls

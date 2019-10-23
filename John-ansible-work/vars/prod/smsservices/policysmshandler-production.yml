@@ -1,0 +1,19 @@
+---
+
+dist_appname: policysmshandler
+dist_type: tar
+dist_env: production
+dist_remotehosts: kirjekyyhky
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_env_svn_files:
+dist_app_files: bin/policysmshandler.sh:bin; etc/smsorderpipe.properties:etc; etc/policysmshandler.xml:etc
+dist_remotecommands_pre_install: ls
+dist_remotecommands_post_install: ls
+
+
+
+

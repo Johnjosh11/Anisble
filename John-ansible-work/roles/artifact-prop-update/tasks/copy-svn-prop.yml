@@ -1,0 +1,15 @@
+---
+
+- name: "replace the svn file for tar in etc"
+  copy:
+    src: "{{ansible_env.HOME}}/ansible/svn/{{ item }}"
+    dest: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}/etc/"
+  with_items: "{{ svn_files.split(';') }}"
+  when: EXT == "tar" and svn_files not in ''
+    
+- name: "replace the svn file for war in WEB-INF"
+  copy:
+    src: "{{ansible_env.HOME}}/ansible/svn/{{ item }}"
+    dest: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}/WEB-INF/"
+  with_items: "{{ svn_files.split(';') }}"
+  when: EXT == "war" and svn_files not in ''

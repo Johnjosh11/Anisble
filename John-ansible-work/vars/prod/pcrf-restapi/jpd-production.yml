@@ -1,0 +1,16 @@
+---
+
+dist_appname: pcrf-restapi
+dist_remotehosts: 193.64.193.81
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt/tomcat/webapps
+dist_remoteuser: root
+dist_app_env_svn_files: pcrf-restapi/pcrf-restapi.properties
+dist_remotecommands_pre_install: /etc/init.d/tomcat stop; rm -rf /opt/tomcat/webapps/pcrf-restapi
+dist_remotecommands_post_install: nohup /etc/init.d/tomcat start; sleep 10
+dist_app_files: etc/web.xml:WEB-INF
+
+dist_remotecommands_server_stop: /etc/init.d/tomcat stop
+dist_remotecommands_server_start: nohup /etc/init.d/tomcat start

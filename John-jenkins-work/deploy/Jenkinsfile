@@ -1,0 +1,142 @@
+node('master') {
+    def build_start_date;
+    def install_start_date;
+    def build_end_date;    
+    try{
+        stage ('Log Details'){
+            wrap([$class: 'BuildUser']) {
+                timestamps {
+                    sh 'pwd'
+                    sh 'whoami'                    
+                    build_start_date= new Date()                    
+                    echo "Build User: ${BUILD_USER} | Build-ID: ${BUILD_NUMBER} | MODULE_NAME: ${MODULE_NAME} | TAG NAME: ${TAG_NAME} | EXT=${EXT} | ADD_EXT=${ADD_EXT} | Date: ${build_start_date} | REMOTE_HOSTS_GROUP: ${REMOTE_HOSTS_GROUP} | INSTALL_SPEC_FILE: ${INSTALL_SPEC_FILE}"
+                }
+            }
+        }
+    
+        stage ('Code Checkout'){
+            timestamps {
+                sh 'pwd'
+                git 'git@github.devcloud.elisa.fi:luukku-ansible/gdpr.git'
+                ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME}" -v', inventory: 'hosts', playbook: 'code-checkout.yml', sudoUser: null
+            }
+        }
+        
+        stage ('Code Build'){
+                timestamps {
+                    ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE}" -v', inventory: 'hosts', playbook: 'code-build.yml', sudoUser: null
+                }                
+            }  
+            
+        stage ('Artifact Generate'){
+                timestamps {
+                    ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE}" -v', inventory: 'hosts', playbook: 'artifact-generate.yml', sudoUser: null
+                }
+            }     
+            
+        stage ('Artifact Publish'){
+                timestamps {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "cno-deploy", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {                    
+                        ansiblePlaybook colorized: true, extras: '--extra-vars "MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE} USERNAME=${USERNAME} PASSWORD=${PASSWORD}" -v', inventory: 'hosts', playbook: 'artifact-publish.yml', sudoUser: null
+                        sleep 5
+                    }
+                }  
+            }      
+        stage ('Artifact Properties Update'){
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${API_USER}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "cno-deploy", usernameVariable: 'ARTI_USER', passwordVariable: 'ARTI_PASS']]) {                
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "torni", usernameVariable: 'SVN_USER', passwordVariable: 'SVN_PASS']]) {                                    
+                        timestamps {
+                            sh "curl --insecure -X POST --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist --header \"Content-Type: application/json\" --data '{\"playbook\":\"artifact-prop-update.yml\",\"inventory\":\"hosts\",\"extra_vars\":\"MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} REMOTE_HOSTS_GROUP=${REMOTE_HOSTS_GROUP} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE} API_USER=${API_USER} ARTI_USER=${ARTI_USER} ARTI_PASS=${ARTI_PASS} SVN_USER=${SVN_USER} SVN_PASS=${SVN_PASS}\"}' > result"
+                            def job_id=readFile('result').trim().substring(8) 
+                            echo "JOB_ID=$job_id"
+                            sleep 30
+                            sh "curl --insecure --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id > result"
+                            String RESULT=readFile('result')
+                            echo "$RESULT"
+                            if(RESULT.contains('FATAL') || RESULT.contains('ERROR') || RESULT.contains('Error:') || RESULT.contains('fatal:')) {
+                                throw new Exception("Exception in the stage..")
+                            }
+                        }
+                    }
+                }
+            }
+        }          
+        stage ('Artifact Deploy'){
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${API_USER}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {            
+                timestamps {
+                    sh "curl --insecure -X POST --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist --header \"Content-Type: application/json\" --data '{\"playbook\":\"artifact-deploy.yml\",\"inventory\":\"hosts\",\"extra_vars\":\"MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} REMOTE_HOSTS_GROUP=${REMOTE_HOSTS_GROUP} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE} API_USER=${API_USER}\"}' > result"
+                    def job_id=readFile('result').trim().substring(8)
+                    echo "JOB_ID=$job_id"
+                    sleep 30
+                    sh "curl --insecure --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id > result"
+                    String RESULT=readFile('result')
+                    echo "$RESULT"
+                    if(RESULT.contains('FATAL') || RESULT.contains('ERROR') || RESULT.contains('Error:') || RESULT.contains('fatal:')) {
+                        throw new Exception("Exception in the stage..")
+                    }
+                }
+            }       
+        }  
+        stage ('Artifact Install'){
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: "${API_USER}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {                        
+                timestamps {
+                    input 'Do you want to proceed to deploy stage'
+                    install_start_date=System.currentTimeMillis()
+                    sh "curl --insecure -X POST --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist --header \"Content-Type: application/json\" --data '{\"playbook\":\"artifact-install.yml\",\"inventory\":\"hosts\",\"extra_vars\":\"MODULE_NAME=${MODULE_NAME} TAG_NAME=${TAG_NAME} EXT=${EXT} ADD_EXT=${ADD_EXT} JAVA_VERSION=${JAVA_VERSION} REMOTE_HOSTS_GROUP=${REMOTE_HOSTS_GROUP} INSTALL_SPEC_FILE=${INSTALL_SPEC_FILE}\"}' > result"
+                    def job_id=readFile('result').trim().substring(8)
+                    echo "JOB_ID=$job_id"
+                    build_end_date=System.currentTimeMillis()
+                    sleep 60
+                    sh "curl --insecure --user $USERNAME:$PASSWORD https://torni.saunalahti.fi/api/v2/$API_USER/dist/$job_id > result"
+                    String RESULT=readFile('result')
+                    echo "$RESULT"
+                    if(RESULT.contains('FATAL') || RESULT.contains('ERROR') || RESULT.contains('Error:') || RESULT.contains('fatal:')) {
+                        install_start_date = null;
+                        build_end_date = null;                        
+                        throw new Exception("Exception in the stage..")
+                    }                    
+                }       
+            }
+        }
+    } finally {
+
+        stage ('Perform Cleanup'){
+            timestamps {
+                //sh "rm -rf /var/lib/jenkins/workspace/github/${MODULE_NAME}/devel"
+                //sh "rm -rf /var/lib/jenkins/workspace/${MODULE_NAME}/deploy"
+                sh "rm -rf /var/lib/jenkins/workspace/auto-deploy-workspace/${MODULE_NAME}"
+                cleanWs()
+            }            
+        }
+        
+        stage ('Log Details in DB'){
+                timestamps {     
+                    echo "Build-ID: ${BUILD_NUMBER} | MODULE_NAME: ${MODULE_NAME} | TAG NAME: ${TAG_NAME} | EXT=${EXT} | ADD_EXT=${ADD_EXT} | Date: ${build_end_date} "
+
+                    if(DB_LOGGING_ENABLED == "true" || DB_LOGGING_ENABLED == "True")
+                    {
+                        getDatabaseConnection(id: '1', type: 'GLOBAL')
+                        {    
+                            wrap([$class: 'BuildUser']) {
+                                echo "insert into deploy_details (job_name,module_name,deploy_user,tag_name,ext,remote_host,install_spec_file,build_start_date,install_start_date,build_end_date) values (\"${JOB_NAME}\",\"${MODULE_NAME}\",\"${BUILD_USER}\",\"${TAG_NAME}\",\"${EXT}\",\"${REMOTE_HOSTS_GROUP}\",\"${INSTALL_SPEC_FILE}\",\"${build_start_date}\",\"${install_start_date}\",\"${build_end_date}\")"
+                                sql connection: '1', sql: "insert into deploy_details (job_name,module_name,deploy_user,tag_name,ext,remote_host,install_spec_file,build_start_date,install_start_date,build_end_date) values (\"${JOB_NAME}\",\"${MODULE_NAME}\",\"${BUILD_USER}\",\"${TAG_NAME}\",\"${EXT}\",\"${REMOTE_HOSTS_GROUP}\",\"${INSTALL_SPEC_FILE}\",\"${build_start_date}\",\"${install_start_date}\",\"${build_end_date}\")"
+                            }
+
+                        }
+                    } else {
+                        echo "Skipped...."
+                    }
+                }
+            }        
+    }
+    
+    stage ('Email on Success'){
+        timestamps {
+            //mail bcc: '', body: 'mybody', cc: 'emails_in_cc', from: 'email_id', replyTo: '', subject: 'closecustomer Deployment Status', to: 'emails_in_to'
+            //hipchatSend color: 'GREEN', credentialId: 'hipchat-notification-token', message: 'Test Message', notify: true, room: 'Devops-GDPR', sendAs: 'DeploymentManager', server: 'hipchat.elisa.fi', textFormat: true, v2enabled: true
+            mattermostSend channel: 'customeroandonline-ams', color: '#439FE0', endpoint: 'https://mattermost.elisa.fi/hooks/xh8648oj1jbc8bbodpajpf798r', failOnError: true, message: "Tag Deployed: ${TAG_NAME},\n For more details : (<${env.BUILD_URL}|Open>) ", text: "Build Started - ${env.JOB_NAME}"
+        }
+    }
+
+}

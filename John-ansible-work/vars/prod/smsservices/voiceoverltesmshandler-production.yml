@@ -1,0 +1,15 @@
+---
+
+dist_appname: voiceoverltesmshandler
+dist_type: tar
+dist_env: production
+dist_remotehosts: kirjekyyhky
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_env_svn_files: voltesmshandler/smsorderpipe.properties;voltesmshandler/voiceoverltesmshandler.xml
+dist_app_files: bin/voiceoverltesmshandler.sh:bin
+dist_remotecommands_pre_install: /etc/init.d/voiceoverltesmshandler stop
+dist_remotecommands_post_install: mkdir -p {{distremotedir_run}}/{{dist_appname}}/var; chown java:java {{dist_remotedir_run}}/{{dist_appname}}/var; ln -s -f /data/log {{dist_remotedir_run}}/{{dist_appname}}/log; chown java:java {{dist_remotedir_run}}/{{dist_appname}}/log; nohup /etc/init.d/voiceoverltesmshandler start

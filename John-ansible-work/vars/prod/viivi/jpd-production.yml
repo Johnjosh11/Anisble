@@ -1,0 +1,15 @@
+---
+
+dist_appname: viivi
+dist_env: production
+dist_remotehosts: sauna-java1,sauna-java2,sauna-java3,sauna-java4
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist/viivi-dist
+dist_remotedir_run: /data/dist/viivi-java
+dist_remotedir_actual_run: /opt/tomcat7/webapps
+dist_remoteuser: root
+dist_app_files: etc/web.xml:.
+dist_app_env_svn_files: viivi/viivi.properties
+dist_remotecommands_pre_install: /etc/init.d/tomcat stop
+dist_remotecommands_post_install: rm {{dist_remotedir_actual_run}}/{{dist_appname}}/WEB-INF; ln -s -f {{dist_remotedir_run}}/{{dist_appname}} {{dist_remotedir_actual_run}}/{{dist_appname}}/WEB-INF; nohup /etc/init.d/tomcat start; sleep 10

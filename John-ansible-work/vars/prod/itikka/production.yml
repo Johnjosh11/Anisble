@@ -1,0 +1,28 @@
+---
+
+dist_appname: itikka
+dist_type: tar
+dist_ignore_libs: true
+dist_env: production
+dist_remotehosts: hyttynen.saunalahti.fi
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remotedir_data: /data/itikka-data
+dist_remotedir_monitor: /usr/local/snmpd/home
+dist_remoteuser: root
+dist_app_dirs: bin:bin;lib:lib;scripts:scripts
+dist_app_files: itikka_all.pl:.;ItikkaConfig.pm:.;sql/triggers.sql:sql
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+app_properties_file: itikka/itikka.cfg
+dist_remotecommands_post_install: ln -s -f {{dist_remotedir_data}}/inbox {{dist_remotedir_run}}/{{dist_appname}}/inbox; ln -s -f {{dist_remotedir_data}}/outbox {{dist_remotedir_run}}/{{dist_appname}}/outbox; ln -s -f {{dist_remotedir_data}}/inbox_done {{dist_remotedir_run}}/{{dist_appname}}/inbox_done; ln -s -f {{dist_remotedir_data}}/outbox_done {{dist_remotedir_run}}/{{dist_appname}}/outbox_done; ln -s -f {{dist_remotedir_data}}/logs {{dist_remotedir_run}}/{{dist_appname}}/logs; ln -s -f {{dist_remotedir_run}}/{{dist_appname}}/bin/itikka_monitor.pl {{dist_remotedir_monitor}}/itikka_monitor.pl; ln -s -f {{dist_remotedir_run}}/{{dist_appname}}/bin/itikka_xml_response_monitor.pl {{dist_remotedir_monitor}}/itikka_xml_response_monitor.pl; ln -s -f {{dist_remotedir_data}}/profit.dsa {{dist_remotedir_run}}/{{dist_appname}}/profit.dsa; chmod +x {{dist_remotedir_run}}/{{dist_appname}}/itikka_all.pl; perl {{dist_remotedir_run}}/{{dist_appname}}/bin/init_status.pl {{dist_remotedir_run}}/{{dist_appname}}/itikka-status.txt
+dist_remotecommands_pre_install: ls
+
+
+
+
+
+
+
+
+       

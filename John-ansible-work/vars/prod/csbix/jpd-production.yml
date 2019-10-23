@@ -1,0 +1,17 @@
+---
+
+dist_appname: csbix
+dist_env: production
+dist_remotehosts: valerian
+dist_remotedir_install: /data/csbix/dist
+dist_remotedir_run: /home/csbix
+dist_remoteuser: root
+dist_app_dirs: bin:bin
+dist_app_env_svn_files: csbix/csbix.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: chown csbix /data/csbix/ -R -L
+dist_remotecommands_pre_install: ls
+
+dist_remotecommands_server_stop: /etc/init.d/csbix stop
+dist_remotecommands_server_start: nohup /etc/init.d/csbix start

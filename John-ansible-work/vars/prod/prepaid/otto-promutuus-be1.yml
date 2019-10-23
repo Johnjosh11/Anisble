@@ -1,0 +1,16 @@
+---
+
+dist_appname: otto
+dist_env: production
+dist_remotehosts: promutuus-be1
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt/resin/webapps
+dist_remoteuser: root
+dist_app_env_svn_files: prepaid/promutuus-be1/prepaid_otto.properties
+dist_remotecommands_pre_install: ls
+dist_remotecommands_post_install: ls
+dist_app_files: conf/otto/web.xml:WEB-INF; conf/otto/genericpackager.dtd:WEB-INF; conf/otto/AutomatiaPackager.xml:WEB-INF
+dist_remotecommands_post_install: nohup /etc/init.d/resin start; sleep 10
+dist_remotecommands_pre_install: /etc/init.d/resin stop

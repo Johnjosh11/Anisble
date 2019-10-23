@@ -1,0 +1,16 @@
+---
+
+dist_appname: mappo-restapi
+dist_env: production
+dist_remotehosts: basaltti-ng
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt/tomcat/webapps
+dist_remoteuser: root
+dist_app_env_svn_files: mappo-restapi/mappo-restapi.properties
+dist_remotecommands_pre_install: /etc/init.d/tomcat stop; rm -rf /opt/tomcat/webapps/mappo-restapi
+dist_remotecommands_post_install: nohup /etc/init.d/tomcat start; sleep 10
+
+dist_remotecommands_server_stop: /etc/init.d/tomcat stop
+dist_remotecommands_server_start: nohup /etc/init.d/tomcat start

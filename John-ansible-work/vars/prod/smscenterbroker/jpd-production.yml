@@ -1,0 +1,14 @@
+---
+
+dist_appname: smscenterbroker
+dist_env: production
+dist_remotehosts: kirjekyyhky
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_files: bin/smscenterbroker-146604.sh:bin; bin/smscenterbroker-146605.sh:bin; bin/smscenterbroker-15121.sh:bin; bin/smscenterbroker-15252.sh:bin; bin/smscenterbroker-18425.sh:bin; bin/smscenterbroker-18425-sl.sh:bin; bin/smscenterbroker-monitoring-146604.pl:bin; bin/smscenterbroker-monitoring-146605.pl:bin; bin/smscenterbroker-monitoring-15121.pl:bin; bin/smscenterbroker-monitoring-15252.pl:bin; bin/smscenterbroker-monitoring-18425.pl:bin; bin/smscenterbroker-monitoring-18425-sl.pl:bin
+dist_app_env_svn_files: smscenterbroker/smscenterbroker-146604.properties;smscenterbroker/smscenterbroker-146605.properties;smscenterbroker/smscenterbroker-15121.properties;smscenterbroker/smscenterbroker-18425.properties;smscenterbroker/smscenterbroker-18425-sl.properties;smscenterbroker/smscenterbroker-146604-logging.properties;smscenterbroker/smscenterbroker-146605-logging.properties;smscenterbroker/smscenterbroker-15121-logging.properties;smscenterbroker/smscenterbroker-18425-logging.properties;smscenterbroker/smscenterbroker-18425-sl-logging.properties;smscenterbroker/smscenterbroker-15252.properties;smscenterbroker/smscenterbroker-15252-logging.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -s -f /data/log /opt/smscenterbroker/log; ln -s -f /data/var /opt/smscenterbroker/var; nohup /etc/init.d/smscenterbroker-146604 start; nohup /etc/init.d/smscenterbroker-146605 start; nohup /etc/init.d/smscenterbroker-15121 start; nohup /etc/init.d/smscenterbroker-15252 start; nohup /etc/init.d/smscenterbroker-18425 start; nohup /etc/init.d/smscenterbroker-18425-sl start
+dist_remotecommands_pre_install: /etc/init.d/smscenterbroker-146604 stop; /etc/init.d/smscenterbroker-146605 stop; /etc/init.d/smscenterbroker-15121 stop; /etc/init.d/smscenterbroker-15252 stop; /etc/init.d/smscenterbroker-18425 stop; /etc/init.d/smscenterbroker-18425-sl stop

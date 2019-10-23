@@ -1,0 +1,13 @@
+---
+
+dist_appname: postpackagenotifier
+dist_env: production
+dist_remotehosts: wolf
+dist_remoteuser: root
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_remotedir_run: /opt
+dist_remotedir_install: /data/dist
+dist_app_files: bin/postpackagenotifier.sh:bin
+dist_app_env_svn_files: postpackagenotifier/jpd-prod/postpackagenotifier.properties
+dist_remotecommands_post_install: ln -s -f /data/log/postpackagenotifier /opt/postpackagenotifier/log
+dist_remotecommands_pre_install: ls

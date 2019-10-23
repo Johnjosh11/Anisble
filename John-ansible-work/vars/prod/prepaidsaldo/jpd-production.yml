@@ -1,0 +1,17 @@
+---
+
+dist_appname: prepaidsaldo
+dist_env: production
+dist_remotehosts: valerian
+dist_remotedir_install: /data/prepaidsaldo/dist
+dist_remotedir_run: /opt/jetty/webapps
+dist_remoteuser: root
+dist_app_files: etc/web.xml:WEB-INF; etc/beans.xml:WEB-INF
+dist_app_env_svn_files: prepaidsaldo/prepaidsaldo.properties
+dist_ssh_keyfile: /root/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: nohup /etc/init.d/jetty start 1>>/data/log/jetty_remote_start.log 2>>/data/log/jetty_remote_start.err; sleep 10
+dist_remotecommands_pre_install: /etc/init.d/jetty stop
+
+dist_remotecommands_server_stop: /etc/init.d/jetty stop
+dist_remotecommands_server_start: nohup /etc/init.d/jetty start

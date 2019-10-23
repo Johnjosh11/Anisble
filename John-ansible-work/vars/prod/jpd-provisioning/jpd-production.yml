@@ -1,0 +1,15 @@
+---
+
+dist_appname: jpd-provisioning
+dist_env: production
+dist_type: tar
+dist_remotehosts: portsari
+dist_remotedir_install: /data/dist
+dist_remotedir_run: /opt
+dist_remoteuser: root
+dist_app_files: bin/*:bin
+dist_app_env_svn_files: jpd-provisioning/nps.properties;jpd-provisioning/nps-logging.properties
+dist_ssh_keyfile: ${user.home}/.ssh/id_dsa
+dist_ssh_passphrase:
+dist_remotecommands_post_install: ln -sf /data/log /opt/jpd-provisioning; mkdir -p /opt/jpd-provisioning/var; chown java:java -R /opt/jpd-provisioning/var
+dist_remotecommands_pre_install: ls

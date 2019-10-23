@@ -1,0 +1,17 @@
+---
+
+# file: artifact-install.yml
+# This playbook install the artifact tar/war on target(production) server
+
+- hosts: "{{REMOTE_HOSTS_GROUP}}"
+  remote_user: root
+  serial: 1
+  
+  vars_files:
+   - vars/prod/{{ MODULE_NAME }}/{{ INSTALL_SPEC_FILE }}.yml
+   
+  vars:
+   - server_stop: "{{ dist_remotecommands_server_stop | default('')}}"
+
+  roles:
+   - server-stop
