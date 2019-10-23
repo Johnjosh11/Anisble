@@ -1,0 +1,250 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: elisa-git-app-template
+  annotations:
+    description: "Easy and straightforward way of deploying your application to Openshift. Just provide the url to your Github project including your application and Dockerfile and start rockin'. For more information visit https://github.devcloud.elisa.fi/DevOps/simple-openshift-template"
+    iconClass: "icon-git"
+    tags: "git"
+    openshift.io/display-name: Elisa Git Application
+objects:
+  - apiVersion: v1
+    kind: Route
+    metadata:
+      name: ${APPLICATION_NAME}
+      labels:
+        app: ${APPLICATION_NAME}
+        net: ${NETWORK}
+    spec:
+      host: ${APPLICATION_URL}
+      to:
+        kind: Service
+        name: ${APPLICATION_NAME}
+        weight: 100
+      tls:
+        termination: edge
+      port:
+        targetPort: ${PORT}-${APPLICATION_NAME}
+      wildcardPolicy: None
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: ${APPLICATION_NAME}
+      labels:
+        app: ${APPLICATION_NAME}
+    spec:
+      ports:
+        - name: ${PORT}-${APPLICATION_NAME}
+          protocol: TCP
+          port: ${{PORT}}
+          targetPort: ${{PORT}}
+      selector:
+        app: ${APPLICATION_NAME}
+        deploymentconfig: ${APPLICATION_NAME}
+      type: ClusterIP
+      sessionAffinity: None
+  - apiVersion: v1
+    kind: BuildConfig
+    metadata:
+      name: ${APPLICATION_NAME}
+      labels:
+        app: ${APPLICATION_NAME}
+    spec:
+      nodeSelector: null
+      output:
+        pushSecret:
+          name: ${AHTAAJA}
+        to:
+          kind: DockerImage
+          name: ${DOCKER_REGISTRY_PATH}:${CONTAINER_TAG}
+      postCommit: {}
+      resources:
+        limits:
+          cpu: 500m
+          memory: 600Mi
+        requests:
+          cpu: 200m
+          memory: 600Mi
+      runPolicy: Serial
+      source:
+            # AccessLogValve is needed to discard excess IP addresses from X-Forwarded-For HTTP header (added by Openshift)
+          dockerfile: |
+            FROM openjdk:8-jdk-alpine
+            USER root
+            RUN   apk update && apk add ca-certificates curl &&  update-ca-certificates
+            RUN adduser --home /home/user --disabled-password --gecos '' user
+            WORKDIR /home/user
+            USER user
+            EXPOSE 8080
+            RUN curl -u selfservice:selfs3rvice -s -f -L https://artifactory.saunalahti.fi/selfservice-release-local/product-api/product-category-server/${PRODUCT_API_VERSION}/product-category-server-${PRODUCT_API_VERSION}.jar -o ./app.jar
+            ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","./app.jar"]
+          type: Dockerfile
+      strategy:
+        dockerStrategy:
+          dockerfilePath: Dockerfile
+          forcePull: true
+          noCache: true
+        type: Docker
+      triggers:
+        - type: ConfigChange
+  - apiVersion: v1
+    kind: ImageStream
+    metadata:
+      name: ${APPLICATION_NAME}
+      labels:
+        app: ${APPLICATION_NAME}
+    spec:
+      dockerImageRepository: ${DOCKER_REGISTRY_PATH}
+      tags:
+        - name: ${CONTAINER_TAG}
+          from:
+            kind: DockerImage
+            name: ${DOCKER_REGISTRY_PATH}:${CONTAINER_TAG}
+          importPolicy: {}
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      name: ${APPLICATION_NAME}
+      labels:
+        app: ${APPLICATION_NAME}
+    spec:
+      strategy:
+        type: Rolling
+        rollingParams:
+          updatePeriodSeconds: 1
+          intervalSeconds: 1
+          timeoutSeconds: 600
+          maxUnavailable: 25%
+          maxSurge: 25%
+        resources: {}
+      triggers:
+        - type: ConfigChange
+        - type: ImageChange
+          imageChangeParams:
+            automatic: true
+            containerNames:
+              - ${APPLICATION_NAME}
+            from:
+              kind: ImageStreamTag
+              name: '${APPLICATION_NAME}:${CONTAINER_TAG}'
+      replicas: 1
+      test: false
+      selector:
+        app: ${APPLICATION_NAME}
+        deploymentconfig: ${APPLICATION_NAME}
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: ${APPLICATION_NAME}
+            deploymentconfig: ${APPLICATION_NAME}
+        spec:
+          containers:
+            - name: ${APPLICATION_NAME}
+              image: ${APPLICATION_NAME}:${CONTAINER_TAG}
+              ports:
+                - containerPort: ${{PORT}}
+                  protocol: ${PROTOCOL}
+              resources:
+                limits:
+                  cpu: '500m'
+                  memory: 512Mi
+                requests:
+                  cpu: '500m'
+                  memory: 256Mi
+              readinessProbe:
+                httpGet:
+                  path: '${READINESS_PROBE_PATH}'
+                  port: ${{PORT}}
+                  scheme: '${READINESS_PROBE_SCHEME}'
+                initialDelaySeconds: 10
+                timeoutSeconds: 30
+                periodSeconds: 60
+                successThreshold: 1
+                failureThreshold: 5
+              terminationMessagePath: /dev/termination-log
+              imagePullPolicy: Always
+              env:
+                - name: SPRING_DATASOURCE_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      name: product-api
+                      key: CONFIG_MAP_SPRING_DATASOURCE_URL
+                - name: SPRING_DATASOURCE_USERNAME
+                  valueFrom:
+                    configMapKeyRef:
+                      name: product-api
+                      key: CONFIG_MAP_SPRING_DATASOURCE_USERNAME
+                - name: SPRING_DATASOURCE_PASSWORD
+                  valueFrom:
+                    configMapKeyRef:
+                      name: product-api
+                      key: CONFIG_MAP_SPRING_DATASOURCE_PASSWORD
+                - name: SPRING_SECURITY_USER_NAME
+                  valueFrom:
+                    configMapKeyRef:
+                      name: product-api
+                      key: CONFIG_MAP_SPRING_SECURITY_USER_NAME
+                - name: SPRING_SECURITY_USER_PASSWORD
+                  valueFrom:
+                    configMapKeyRef:
+                      name: product-api
+                      key: CONFIG_MAP_SPRING_SECURITY_USER_PASSWORD
+          restartPolicy: Always
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          securityContext: {}
+          imagePullSecrets:
+            - name: ${AHTAAJA}
+parameters:
+  - name: SOURCE_REPOSITORY_URL
+    displayName: Source Repository URL
+    description: The URL of the repository with your application source code
+    value: https://github.devcloud.elisa.fi/hy/product-api.git
+    required: true
+  - name: APPLICATION_NAME
+    description: "Application name"
+    value: "product-api"
+    required: true
+  - name: GIT
+    description: "Openshift secret containing Github credentials"
+    value: "git"
+    required: true
+  - name: AHTAAJA
+    description: "Openshift secret containing ahtaaja credentials"
+    value: "ahtaaja"
+    required: true
+  - name: DOCKER_REGISTRY_PATH
+    description: "Where to upload the build image"
+    value: "ahtaaja.saunalahti.fi/hy/product-api/public/product-api"
+    required: true
+  - name: CONTAINER_TAG
+    description: "Tag of the container"
+    value: "latest"
+    required: true
+  - name: PORT
+    description: "Port that should be exposed"
+    value: "8080"
+    required: true
+  - name: PROTOCOL
+    description: "Protocol in use TCP/UDP"
+    value: "TCP"
+    required: true
+  - name: READINESS_PROBE_PATH
+    description: "READINESS_PROBE_PATH"
+    value: "/actuator/health"
+    required: true
+  - name: READINESS_PROBE_SCHEME
+    description: "READINESS_PROBE_SCHEME"
+    value: "HTTP"
+    required: true
+  - name: APPLICATION_URL
+    description: "Url to be used for accessing your application i.e. your-application.apps-int.elisa.fi"
+    value: "product-api.dc1-int-dev.elisa.fi"
+    required: true
+  - name: NETWORK
+    description: "Should the url be accessible from within Elisa or should it be open for the public. Possible values are 'ext' and 'int'"
+    value: "int"
+    required: true
+  - name: PRODUCT_API_VERSION
+    required: true

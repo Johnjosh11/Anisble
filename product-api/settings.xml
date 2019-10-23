@@ -1,0 +1,34 @@
+<settings>
+    <servers>
+        <server>
+            <id>selfservice-release-local</id>
+            <username>selfservice</username>
+            <password>selfs3rvice</password>
+        </server>
+        <server>
+            <id>ext-release-local</id>
+            <username>selfservice</username>
+            <password>selfs3rvice</password>
+        </server>
+        <server>
+            <id>selfservice-snapshot-local</id>
+            <username>selfservice</username>
+            <password>selfs3rvice</password>
+        </server>
+        <server>
+            <id>ext-releases</id>
+            <username>selfservice</username>
+            <password>selfs3rvice</password>
+        </server>
+        <server>
+            <id>product-api-release-local</id>
+            <username>selfservice</username>
+            <password>selfs3rvice</password>
+        </server>
+        <server>
+            <id>product-api-snapshot-local</id>
+            <username>selfservice</username>
+            <password>selfs3rvice</password>
+        </server>
+    </servers>
+</settings>

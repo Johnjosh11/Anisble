@@ -1,0 +1,14 @@
+{
+  "name":"newCategory_name",
+  "codeName":"newCategory_code_name",
+  "weight":50,
+  "type":"sales",
+  "validFrom":"2017-08-11T13:11:12.000+0300",
+  "validTo":null,
+  "pathItem":"newCategory_path_item",
+  "categoryParentMappings":[{
+    "validFrom":null,
+    "validTo":"2021-08-11T13:11:12.000+0300",
+    "categoryId": 20
+  }]
+}

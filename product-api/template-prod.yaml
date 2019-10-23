@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: product-api-master-docker-template
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewBuild
+    creationTimestamp: null
+    labels:
+      build: product-api-master-build
+    name: product-api-master-build
+  spec:
+    nodeSelector: null
+    output:
+      pushSecret:
+        name: ahtaaja
+      to:
+        kind: DockerImage
+        name: ahtaaja.saunalahti.fi/hy/product-api/public/product-api:product-api-master
+    postCommit: {}
+    resources: {}
+    runPolicy: SerialLatestOnly
+    source:
+      dockerfile: |
+            FROM openjdk:8-jdk-alpine
+            RUN apk add -U tzdata
+            RUN apk add --no-cache curl iputils perl grep
+            RUN cp /usr/share/zoneinfo/Europe/Helsinki /etc/localtime
+            RUN date
+            RUN mkdir -p /home/app
+            WORKDIR /home/app
+            RUN   apk update && apk add ca-certificates curl &&  update-ca-certificates
+            EXPOSE 8080
+            RUN curl -u selfservice:selfs3rvice -s -f -L https://artifactory.saunalahti.fi/selfservice-release-local/product-api/product-category-server/${PRODUCT_API_VERSION}/product-category-server-${PRODUCT_API_VERSION}.jar -o ./app.jar
+            USER 1001
+            ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","app.jar"]
+    type: Dockerfile
+    strategy:
+      dockerStrategy:
+        forcePull: true
+        noCache: true
+        from:
+          kind: DockerImage
+          name: tomcat:8.5.15-jre8-alpine
+      type: Docker
+    triggers: []
+  status:
+    lastVersion: 0
+parameters: 
+- name: PRODUCT_API_VERSION
+  required: true
