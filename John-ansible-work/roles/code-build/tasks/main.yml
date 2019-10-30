@@ -1,9 +1,0 @@
----
-# tasks file for build the module
-
-- name: "Building the {{MODULE_NAME}}"
-  command: "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/{{MODULE_NAME}}/common/ant/bin/ant -Divy.resolver.file=ivysettings-deploy.xml -Divy.deploy.repository.path={{ ansible_env.HOME }}/workspace/auto-deploy-workspace/{{MODULE_NAME}}/deploy -Dinstall-spec-file={{INSTALL_SPEC_FILE}} -Dproject.qualifier=-{{TAG_NAME}} clean build-all-upstream publish"
-  args:
-    chdir: "{{ ansible_env.HOME }}/workspace/auto-deploy-workspace/{{MODULE_NAME}}/software/{{MODULE_NAME}}"
-  environment:
-    JAVA_HOME: "{{ JAVA_PATH }}"

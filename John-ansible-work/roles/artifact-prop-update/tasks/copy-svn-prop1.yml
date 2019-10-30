@@ -1,8 +1,0 @@
----
- 
-- name: "replace the svn file for war in WEB-INF/classes"
-  copy:
-    src: "{{ansible_env.HOME}}/ansible/svn/{{ item }}"
-    dest: "{{ansible_env.HOME}}/ansible/deploy/{{dist_appname}}-1.0-{{TAG_NAME}}/WEB-INF/classes"
-  with_items: "{{ svn_files.split(';') }}"
-  when: EXT == "war" and svn_files not in ''
